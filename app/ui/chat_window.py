@@ -23,7 +23,7 @@ regresa a la interfaz mediante una señal (Signal).
 
 from PySide6.QtCore import Qt, QThread, QTimer, Signal
 from PySide6.QtWidgets import (
-    QFileDialog, QFrame, QHBoxLayout, QLabel, QListWidget, QListWidgetItem,
+    QApplication, QFileDialog, QFrame, QHBoxLayout, QLabel, QListWidget, QListWidgetItem,
     QMainWindow, QMessageBox, QPlainTextEdit, QPushButton, QScrollArea,
     QVBoxLayout, QWidget,
 )
@@ -31,7 +31,7 @@ from PySide6.QtWidgets import (
 from app import exporter
 from app.ai_client import ClienteIA, ErrorIA
 from app.file_loader import ErrorArchivo, cargar_archivo
-
+from app.ui.styles import ESTILO, ESTILO_OSCURO
 
 # ====================================================================== #
 # Hilo que consulta al modelo sin congelar la interfaz
@@ -136,6 +136,7 @@ class VentanaChat(QMainWindow):
         self.conversacion_id = None  # conversación abierta actualmente
         self.hilo = None             # referencia al hilo para que no lo borre el recolector
         self.cerrando_sesion = False
+        self.tema_oscuro = False     # empezamos en tema claro
 
         self.setWindowTitle(f"Chat con IA - {username}")
         self.resize(1100, 720)
@@ -198,6 +199,10 @@ class VentanaChat(QMainWindow):
             ("🗑  Eliminar conversación", self.eliminar_conversacion),
             ("🚪  Cerrar sesión", self.cerrar_sesion),
         ]:
+                    # Botón para cambiar de tema
+            self.boton_tema = QPushButton("🌙  Modo oscuro")
+            self.boton_tema.clicked.connect(self.cambiar_tema)
+            lay.addWidget(self.boton_tema)
             boton = QPushButton(texto)
             boton.clicked.connect(funcion)
             lay.addWidget(boton)
@@ -453,3 +458,16 @@ class VentanaChat(QMainWindow):
         evento.accept()
         if self.cerrando_sesion:
             self.sesion_cerrada.emit()
+
+
+    # Tema claro / oscuro
+    def cambiar_tema(self):
+        self.tema_oscuro = not self.tema_oscuro    # True -> False, False -> True
+
+        app = QApplication.instance()              # la aplicación que ya existe
+        if self.tema_oscuro:
+            app.setStyleSheet(ESTILO_OSCURO)
+            self.boton_tema.setText("☀️  Modo claro")
+        else:
+            app.setStyleSheet(ESTILO)
+            self.boton_tema.setText("🌙  Modo oscuro")

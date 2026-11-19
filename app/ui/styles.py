@@ -146,3 +146,61 @@ QPlainTextEdit:focus, QLineEdit:focus {
     font-weight: bold;
 }
 """
+
+
+# ======================================================================
+# TEMA OSCURO
+ESTILO_OSCURO = ESTILO + """
+QWidget {
+    color: #e5e7eb;
+}
+
+/* Ventanas emergentes (login, mensajes de aviso) */
+QDialog, QMessageBox {
+    background-color: #1f2937;
+}
+QDialog QPushButton, QMessageBox QPushButton {
+    background-color: #374151;
+    color: #f9fafb;
+    border: 1px solid #4b5563;
+    border-radius: 6px;
+    padding: 6px 14px;
+}
+
+/* Zona del chat */
+#zonaChat, QScrollArea, #contenedorMensajes {
+    background-color: #0f172a;
+}
+#barraArchivo {
+    background-color: #1f2937;
+    border-bottom: 1px solid #374151;
+    color: #f9fafb;
+}
+
+/* Burbuja del modelo (la del usuario se queda azul) */
+#burbujaModelo {
+    background-color: #1f2937;
+    border: 1px solid #374151;
+}
+#fecha {
+    color: #6b7280;
+}
+
+/* Caja para escribir */
+#barraEntrada {
+    background-color: #1f2937;
+    border-top: 1px solid #374151;
+}
+QPlainTextEdit, QLineEdit {
+    background-color: #111827;
+    border: 1px solid #374151;
+    color: #f9fafb;
+}
+
+/* Botón "Registrarse" del login */
+#botonSecundario {
+    background-color: #1f2937;
+    color: #93c5fd;
+    border: 1px solid #3b82f6;
+}
+"""
