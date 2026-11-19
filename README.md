@@ -1,4 +1,4 @@
-# 💬 Chat de preguntas sobre archivos con IA (Proyecto A)
+# Chat de preguntas sobre archivos con IA (Proyecto A)
 
 Aplicación de escritorio en **Python + PySide6** para cargar un archivo **TXT o PDF**, hacerle preguntas a un modelo de IA (**Google Gemini**, capa gratuita), guardar las conversaciones en **SQLite** y exportarlas a **JSON** o **XML**.
 
@@ -42,4 +42,4 @@ proyecto-chatbot/
         └── chat_window.py   # ventana principal del chat
 ```
 
-La explicación completa del código está en **[GUIA.md](GUIA.md)**.
+
