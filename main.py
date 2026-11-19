@@ -52,7 +52,7 @@ class Controlador:
 def main():
     app = QApplication(sys.argv)
     app.setStyleSheet(ESTILO)
-    # Controlamos nosotros cuándo termina la app (por el cambio login <-> chat)
+    # Controlamos nosotros cuándo termina la app (por el cambio login a chat)
     app.setQuitOnLastWindowClosed(False)
 
     controlador = Controlador(app)

@@ -19,7 +19,7 @@ from app.ai_client import ClienteIA, ErrorIA
 load_dotenv()
 api_key = os.getenv("GEMINI_API_KEY", "")
 if not api_key:
-    raise SystemExit("❌ No hay GEMINI_API_KEY en el archivo .env")
+    raise SystemExit("Error: No hay GEMINI_API_KEY en el archivo .env")
 
 print("Modelos disponibles que soportan generateContent:")
 r = requests.get(
@@ -27,7 +27,7 @@ r = requests.get(
     headers={"x-goog-api-key": api_key}, params={"pageSize": 100}, timeout=30,
 )
 if r.status_code != 200:
-    raise SystemExit(f"❌ Error {r.status_code}: {r.text}")
+    raise SystemExit(f" Error {r.status_code}: {r.text}")
 for m in r.json().get("models", []):
     if "generateContent" in m.get("supportedGenerationMethods", []):
         print("  -", m["name"].replace("models/", ""))
@@ -35,8 +35,8 @@ for m in r.json().get("models", []):
 cliente = ClienteIA()
 print(f"\nProbando el modelo configurado: {cliente.modelo}")
 try:
-    print("✅ Respuesta:", cliente.preguntar(
+    print("Correct0 Respuesta:", cliente.preguntar(
         "prueba.txt", "La capital de Francia es París.", [], "¿Cuál es la capital de Francia?"
     ))
 except ErrorIA as e:
-    print("❌", e)
+    print("Error", e)
