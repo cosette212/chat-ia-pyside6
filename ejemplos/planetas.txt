@@ -1,0 +1,10 @@
+Sistema Solar - Datos básicos de los planetas
+
+Mercurio: es el planeta más cercano al Sol. No tiene lunas. Su año dura 88 días terrestres.
+Venus: es el planeta más caliente, con temperaturas cercanas a 465 °C. No tiene lunas.
+Tierra: el único planeta conocido con vida. Tiene 1 luna.
+Marte: conocido como el planeta rojo. Tiene 2 lunas: Fobos y Deimos.
+Júpiter: el planeta más grande del Sistema Solar. Tiene 95 lunas confirmadas.
+Saturno: famoso por sus anillos. Tiene 274 lunas confirmadas, el mayor número de lunas.
+Urano: gira de lado, con una inclinación de unos 98 grados. Tiene 29 lunas.
+Neptuno: el planeta más lejano del Sol y el de vientos más rápidos. Tiene 16 lunas.

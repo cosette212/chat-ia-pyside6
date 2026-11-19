@@ -1,0 +1,17 @@
+# Entorno virtual
+.venv/
+venv/
+# Secretos: NUNCA subir la API key
+.env
+# Base de datos local (cada quien tiene la suya)
+*.db
+# Python
+__pycache__/
+*.pyc
+# Exportaciones de prueba
+conversacion_*.json
+conversacion_*.xml
+# Editor / SO
+.vscode/settings.json
+.DS_Store
+Thumbs.db

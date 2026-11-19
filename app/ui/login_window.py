@@ -1,0 +1,92 @@
+"""
+login_window.py
+---------------
+Ventana de inicio de sesión (QDialog).
+
+Un QDialog se abre con .exec() y "bloquea" hasta que se cierra:
+  - self.accept() -> el login fue correcto  (exec() regresa Accepted)
+  - self.reject() -> el usuario cerró la ventana
+"""
+
+from PySide6.QtCore import Qt
+from PySide6.QtWidgets import (
+    QDialog, QHBoxLayout, QLabel, QLineEdit, QMessageBox, QPushButton, QVBoxLayout,
+)
+
+from app import auth
+
+
+class VentanaLogin(QDialog):
+    def __init__(self, db):
+        super().__init__()
+        self.db = db
+        self.usuario_id = None
+        self.username = ""
+
+        self.setWindowTitle("Chat con IA - Iniciar sesión")
+        self.setFixedSize(380, 320)
+        self._construir_ui()
+
+    def _construir_ui(self):
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(30, 25, 30, 25)
+        layout.setSpacing(10)
+
+        titulo = QLabel("💬 Chat con IA")
+        titulo.setObjectName("tituloLogin")
+        titulo.setAlignment(Qt.AlignCenter)
+        layout.addWidget(titulo)
+
+        subtitulo = QLabel("Ingresa tu usuario y contraseña")
+        subtitulo.setAlignment(Qt.AlignCenter)
+        layout.addWidget(subtitulo)
+        layout.addSpacing(10)
+
+        self.campo_usuario = QLineEdit()
+        self.campo_usuario.setPlaceholderText("Usuario")
+        layout.addWidget(self.campo_usuario)
+
+        self.campo_password = QLineEdit()
+        self.campo_password.setPlaceholderText("Contraseña")
+        self.campo_password.setEchoMode(QLineEdit.Password)  # muestra ••••
+        # Enter en la contraseña = presionar "Ingresar"
+        self.campo_password.returnPressed.connect(self.ingresar)
+        layout.addWidget(self.campo_password)
+        layout.addSpacing(10)
+
+        botones = QHBoxLayout()
+        boton_registrar = QPushButton("Registrarse")
+        boton_registrar.setObjectName("botonSecundario")
+        boton_registrar.clicked.connect(self.registrar)
+
+        boton_ingresar = QPushButton("Ingresar")
+        boton_ingresar.setObjectName("botonLogin")
+        boton_ingresar.setDefault(True)
+        boton_ingresar.clicked.connect(self.ingresar)
+
+        botones.addWidget(boton_registrar)
+        botones.addWidget(boton_ingresar)
+        layout.addLayout(botones)
+        layout.addStretch()
+
+    # --- Acciones de los botones (slots) ---
+    def ingresar(self):
+        usuario = self.campo_usuario.text()
+        password = self.campo_password.text()
+        usuario_id = auth.iniciar_sesion(self.db, usuario, password)
+        if usuario_id is None:
+            QMessageBox.warning(self, "Error", "Usuario o contraseña incorrectos.")
+            self.campo_password.clear()
+            return
+        self.usuario_id = usuario_id
+        self.username = usuario.strip()
+        self.accept()
+
+    def registrar(self):
+        ok, mensaje = auth.registrar(
+            self.db, self.campo_usuario.text(), self.campo_password.text()
+        )
+        if ok:
+            QMessageBox.information(self, "Registro", mensaje)
+        else:
+            QMessageBox.warning(self, "Registro", mensaje)
