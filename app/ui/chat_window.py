@@ -24,14 +24,15 @@ regresa a la interfaz mediante una señal (Signal).
 from PySide6.QtCore import Qt, QThread, QTimer, Signal
 from PySide6.QtWidgets import (
     QApplication, QFileDialog, QFrame, QHBoxLayout, QLabel, QListWidget, QListWidgetItem,
-    QMainWindow, QMessageBox, QPlainTextEdit, QPushButton, QScrollArea,
+    QMainWindow, QMenu, QMessageBox, QPlainTextEdit, QPushButton, QScrollArea,
     QVBoxLayout, QWidget,
 )
 
 from app import exporter
 from app.ai_client import ClienteIA, ErrorIA
-from app.file_loader import ErrorArchivo, cargar_archivo
+from app.file_loader import FILTRO_DIALOGO, ErrorArchivo, cargar_archivo
 from app.ui.styles import ESTILO, ESTILO_OSCURO
+from app.ui.vista_previa import DialogoContenidoArchivo, DialogoVistaPrevia
 
 # ====================================================================== #
 # Hilo que consulta al modelo sin congelar la interfaz
@@ -193,19 +194,23 @@ class VentanaChat(QMainWindow):
         titulo_op.setObjectName("tituloSeccion")
         lay.addWidget(titulo_op)
 
-        for texto, funcion in [
-            ("📤  Exportar a JSON", self.exportar_json),
-            ("📤  Exportar a XML", self.exportar_xml),
-            ("🗑  Eliminar conversación", self.eliminar_conversacion),
-            ("🚪  Cerrar sesión", self.cerrar_sesion),
-        ]:
-                    # Botón para cambiar de tema
-            self.boton_tema = QPushButton("🌙  Modo oscuro")
-            self.boton_tema.clicked.connect(self.cambiar_tema)
-            lay.addWidget(self.boton_tema)
-            boton = QPushButton(texto)
-            boton.clicked.connect(funcion)
-            lay.addWidget(boton)
+        # Un solo botón con menú desplegable para todos los formatos de exportación
+        self.boton_exportar = QPushButton("📤  Exportar")
+        self.boton_exportar.setMenu(self._crear_menu_exportar())
+        lay.addWidget(self.boton_exportar)
+
+        boton_eliminar = QPushButton("🗑  Eliminar conversación")
+        boton_eliminar.clicked.connect(self.eliminar_conversacion)
+        lay.addWidget(boton_eliminar)
+
+        # Botón para cambiar de tema
+        self.boton_tema = QPushButton("🌙  Modo oscuro")
+        self.boton_tema.clicked.connect(self.cambiar_tema)
+        lay.addWidget(self.boton_tema)
+
+        boton_sesion = QPushButton("🚪  Cerrar sesión")
+        boton_sesion.clicked.connect(self.cerrar_sesion)
+        lay.addWidget(boton_sesion)
 
         modelo = QLabel(f"Modelo: {self.cliente_ia.modelo}")
         modelo.setObjectName("tituloSeccion")
@@ -219,10 +224,24 @@ class VentanaChat(QMainWindow):
         lay.setContentsMargins(0, 0, 0, 0)
         lay.setSpacing(0)
 
-        # Barra superior con el nombre del archivo
+        # Barra superior con el nombre del archivo y el botón para ver su contenido
+        barra_archivo = QFrame()
+        barra_archivo.setObjectName("barraArchivo")
+        fila_archivo = QHBoxLayout(barra_archivo)
+        fila_archivo.setContentsMargins(16, 6, 16, 6)
+
         self.etiqueta_archivo = QLabel("📄 Sin archivo cargado")
-        self.etiqueta_archivo.setObjectName("barraArchivo")
-        lay.addWidget(self.etiqueta_archivo)
+        self.etiqueta_archivo.setObjectName("textoBarraArchivo")
+
+        self.boton_ver_archivo = QPushButton("👁  Ver contenido")
+        self.boton_ver_archivo.setObjectName("botonVerArchivo")
+        self.boton_ver_archivo.setToolTip("Ver el texto que se extrajo del archivo y se envía al modelo")
+        self.boton_ver_archivo.setEnabled(False)  # se activa al abrir una conversación
+        self.boton_ver_archivo.clicked.connect(self.ver_contenido_archivo)
+
+        fila_archivo.addWidget(self.etiqueta_archivo, stretch=1)
+        fila_archivo.addWidget(self.boton_ver_archivo)
+        lay.addWidget(barra_archivo)
 
         # Área de mensajes con scroll
         self.scroll = QScrollArea()
@@ -281,7 +300,8 @@ class VentanaChat(QMainWindow):
         self.limpiar_mensajes()
         self.agregar_burbuja(
             "modelo",
-            "¡Hola! Carga un archivo **TXT** o **PDF** con el botón "
+            "¡Hola! Carga un archivo (**PDF**, **Word**, **Excel**, **TXT**, **CSV**, "
+            "**Markdown**, **JSON**, **HTML**...) con el botón "
             "*Nueva conversación* y hazme preguntas sobre su contenido.\n\n"
             "También puedes abrir una conversación anterior desde el historial "
             "para continuarla.",
@@ -303,7 +323,7 @@ class VentanaChat(QMainWindow):
 
     def nueva_conversacion(self):
         ruta, _ = QFileDialog.getOpenFileName(
-            self, "Selecciona un archivo", "", "Documentos (*.txt *.pdf)"
+            self, "Selecciona un archivo", "", FILTRO_DIALOGO
         )
         if not ruta:
             return  # el usuario canceló
@@ -325,6 +345,7 @@ class VentanaChat(QMainWindow):
         if conv is None:
             return
         self.conversacion_id = conversacion_id
+        self.boton_ver_archivo.setEnabled(True)
         palabras = len(conv["archivo_texto"].split())
         self.etiqueta_archivo.setText(
             f"📄 Archivo: {conv['archivo_nombre']}   ·   {palabras:,} palabras"
@@ -348,8 +369,17 @@ class VentanaChat(QMainWindow):
             self.db.eliminar_conversacion(self.conversacion_id)
             self.conversacion_id = None
             self.etiqueta_archivo.setText("📄 Sin archivo cargado")
+            self.boton_ver_archivo.setEnabled(False)
             self.cargar_lista_conversaciones()
             self.mostrar_bienvenida()
+
+    def ver_contenido_archivo(self):
+        if not self._hay_conversacion():
+            return
+        conv = self.db.obtener_conversacion(self.conversacion_id)
+        if conv is None:
+            return
+        DialogoContenidoArchivo(conv["archivo_nombre"], conv["archivo_texto"], self).exec()
 
     # ------------------------------------------------------------------ #
     # Envío de mensajes y respuesta de la IA
@@ -421,28 +451,41 @@ class VentanaChat(QMainWindow):
             return False
         return True
 
-    def _exportar(self, extension, funcion):
+    def _crear_menu_exportar(self) -> QMenu:
+        menu = QMenu(self)
+        for clave, formato in exporter.FORMATOS.items():
+            # "_" absorbe el argumento "checked" que Qt manda al hacer clic
+            menu.addAction(formato.nombre, lambda _=False, c=clave: self.exportar_formato(c))
+        menu.addSeparator()
+        menu.addAction("👁  Ver contenido…", lambda _=False: self.ver_contenido())
+        return menu
+
+    def exportar_formato(self, clave, padre=None):
+        """Pide dónde guardar y exporta la conversación abierta al formato `clave`."""
         if not self._hay_conversacion():
             return
+        padre = padre or self  # si se llama desde la vista previa, los avisos salen sobre ella
+        extension = exporter.FORMATOS[clave].extension
         sugerido = f"conversacion_{self.conversacion_id}.{extension}"
         ruta, _ = QFileDialog.getSaveFileName(
-            self, f"Exportar a {extension.upper()}", sugerido, f"{extension.upper()} (*.{extension})"
+            padre, f"Exportar a {extension.upper()}", sugerido, f"{extension.upper()} (*.{extension})"
         )
         if not ruta:
             return
         if not ruta.lower().endswith(f".{extension}"):
             ruta += f".{extension}"
         try:
-            funcion(self.db, self.conversacion_id, ruta)
-            QMessageBox.information(self, "Exportar", f"Conversación exportada en:\n{ruta}")
+            exporter.exportar(self.db, self.conversacion_id, clave, ruta)
+            QMessageBox.information(padre, "Exportar", f"Conversación exportada en:\n{ruta}")
         except Exception as e:
-            QMessageBox.critical(self, "Exportar", f"Error al exportar: {e}")
+            QMessageBox.critical(padre, "Exportar", f"Error al exportar: {e}")
 
-    def exportar_json(self):
-        self._exportar("json", exporter.exportar_json)
-
-    def exportar_xml(self):
-        self._exportar("xml", exporter.exportar_xml)
+    def ver_contenido(self):
+        if not self._hay_conversacion():
+            return
+        dialogo = DialogoVistaPrevia(self.db, self.conversacion_id, parent=self)
+        dialogo.exportar_solicitado.connect(lambda clave: self.exportar_formato(clave, dialogo))
+        dialogo.exec()
 
     # ------------------------------------------------------------------ #
     # Sesión

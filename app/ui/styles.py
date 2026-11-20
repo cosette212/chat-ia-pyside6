@@ -69,9 +69,25 @@ QWidget {
 }
 #barraArchivo {
     background-color: white;
+    border: none;
     border-bottom: 1px solid #e5e7eb;
-    padding: 10px 16px;
+}
+#textoBarraArchivo {
     font-weight: bold;
+}
+#botonVerArchivo {
+    background-color: white;
+    color: #2563eb;
+    border: 1px solid #2563eb;
+    border-radius: 6px;
+    padding: 5px 12px;
+}
+#botonVerArchivo:hover {
+    background-color: #eff6ff;
+}
+#botonVerArchivo:disabled {
+    color: #9ca3af;
+    border: 1px solid #d1d5db;
 }
 QScrollArea {
     border: none;
@@ -120,7 +136,7 @@ QPlainTextEdit, QLineEdit {
 QPlainTextEdit:focus, QLineEdit:focus {
     border: 1px solid #2563eb;
 }
-#botonEnviar, #botonLogin {
+#botonEnviar, #botonLogin, #botonDialogo {
     background-color: #2563eb;
     color: white;
     border: none;
@@ -128,7 +144,7 @@ QPlainTextEdit:focus, QLineEdit:focus {
     padding: 10px 18px;
     font-weight: bold;
 }
-#botonEnviar:hover, #botonLogin:hover {
+#botonEnviar:hover, #botonLogin:hover, #botonDialogo:hover {
     background-color: #1d4ed8;
 }
 #botonEnviar:disabled {
@@ -144,6 +160,55 @@ QPlainTextEdit:focus, QLineEdit:focus {
 #tituloLogin {
     font-size: 22px;
     font-weight: bold;
+}
+
+/* ---------- Menú desplegable (Exportar) y lista de formatos ---------- */
+QMenu {
+    background-color: white;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    padding: 4px;
+}
+QMenu::item {
+    padding: 7px 22px;
+    border-radius: 4px;
+}
+QMenu::item:selected {
+    background-color: #2563eb;
+    color: white;
+}
+QMenu::separator {
+    height: 1px;
+    background-color: #e5e7eb;
+    margin: 4px 8px;
+}
+QComboBox {
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    padding: 6px 10px;
+    background-color: white;
+    min-width: 220px;
+}
+QComboBox QAbstractItemView {
+    background-color: white;
+    selection-background-color: #2563eb;
+    selection-color: white;
+}
+
+/* ---------- Vista previa del contenido ---------- */
+#vistaCodigo {
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 13px;
+}
+QTextBrowser {
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    padding: 8px;
+    background-color: white;
+}
+#notaVistaPrevia {
+    color: #6b7280;
+    font-size: 12px;
 }
 """
 
@@ -174,7 +239,21 @@ QDialog QPushButton, QMessageBox QPushButton {
 #barraArchivo {
     background-color: #1f2937;
     border-bottom: 1px solid #374151;
+}
+#textoBarraArchivo {
     color: #f9fafb;
+}
+#botonVerArchivo {
+    background-color: #1f2937;
+    color: #93c5fd;
+    border: 1px solid #3b82f6;
+}
+#botonVerArchivo:hover {
+    background-color: #374151;
+}
+#botonVerArchivo:disabled {
+    color: #6b7280;
+    border: 1px solid #374151;
 }
 
 /* Burbuja del modelo (la del usuario se queda azul) */
@@ -202,5 +281,33 @@ QPlainTextEdit, QLineEdit {
     background-color: #1f2937;
     color: #93c5fd;
     border: 1px solid #3b82f6;
+}
+/* Menú desplegable, lista de formatos y vista previa */
+QMenu {
+    background-color: #1f2937;
+    border: 1px solid #374151;
+    color: #e5e7eb;
+}
+QMenu::separator {
+    background-color: #374151;
+}
+QComboBox {
+    background-color: #111827;
+    border: 1px solid #374151;
+    color: #f9fafb;
+}
+QComboBox QAbstractItemView {
+    background-color: #1f2937;
+    color: #e5e7eb;
+    selection-background-color: #2563eb;
+    selection-color: white;
+}
+QTextBrowser {
+    background-color: #111827;
+    border: 1px solid #374151;
+    color: #f9fafb;
+}
+#notaVistaPrevia {
+    color: #9ca3af;
 }
 """

@@ -1,14 +1,16 @@
 # Chat de preguntas sobre archivos con IA (Proyecto A)
 
-Aplicación de escritorio en **Python + PySide6** para cargar un archivo **TXT o PDF**, hacerle preguntas a un modelo de IA (**Google Gemini**, capa gratuita), guardar las conversaciones en **SQLite** y exportarlas a **JSON** o **XML**.
+Aplicación de escritorio en **Python + PySide6** para cargar un archivo (**PDF, Word, Excel, TXT, CSV, Markdown, JSON, XML, HTML...**), hacerle preguntas a un modelo de IA (**Google Gemini**, capa gratuita), guardar las conversaciones en **SQLite** y exportarlas a **JSON y XML**.
 
 ## Funcionalidades
 - Login con usuario y contraseña (contraseñas con hash PBKDF2 + salt)
 - Interfaz tipo chat con burbujas para el usuario y el modelo, y panel lateral de opciones
-- Carga de archivos `.txt` y `.pdf` (el PDF se convierte a texto)
+- Carga de archivos `.pdf`, `.docx`, `.xlsx`, `.html`/`.htm`, `.txt`, `.md`, `.csv`, `.tsv`, `.json`, `.xml` y `.log` (todos se convierten a texto)
+- **Ver contenido** del archivo cargado: botón en la barra superior que muestra el texto extraído (lo que recibe el modelo)
 - Respuestas del modelo basadas en el archivo cargado
 - Historial en base de datos: al iniciar sesión se cargan tus conversaciones y puedes continuarlas
-- Exportación a JSON y XML
+- Exportación a JSON y XML desde un botón con menú desplegable.
+- **Ver contenido** de la exportación: vista previa de la conversación en el formato elegido antes de guardarla
 
 ## Instalación rápida
 ```bash
@@ -33,12 +35,13 @@ proyecto-chatbot/
 └── app/
     ├── database.py      # SQLite: usuarios, conversaciones, mensajes
     ├── auth.py          # registro e inicio de sesión
-    ├── file_loader.py   # lectura de TXT y PDF
+    ├── file_loader.py   # lectura de PDF, Word, Excel, HTML y archivos de texto
     ├── ai_client.py     # conexión con Gemini (API REST)
     ├── exporter.py      # exportar a JSON / XML
     └── ui/
         ├── styles.py        # estilos QSS
         ├── login_window.py  # ventana de login
+        ├── vista_previa.py  # ventanas "Ver contenido" (archivo cargado y vista previa de la exportación)
         └── chat_window.py   # ventana principal del chat
 ```
 
