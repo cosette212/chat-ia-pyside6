@@ -12,6 +12,17 @@ Aplicación de escritorio en **Python + PySide6** para cargar un archivo (**PDF,
 - Exportación a JSON y XML desde un botón con menú desplegable.
 - **Ver contenido** de la exportación: vista previa de la conversación en el formato elegido antes de guardarla
 
+### Preguntas sugeridas y botón Copiar (Integrante 5)
+
+**Archivo:** `app/ui/chat_window.py` (clases `Burbuja` y `VentanaChat`)
+
+- **Preguntas sugeridas:** al abrir una conversación sin mensajes aparecen tres
+  botones ("Resume el archivo", "Puntos principales", "Hazme un quiz de 3
+  preguntas"). Al hacer clic, la pregunta se envía automáticamente al modelo.
+  Los botones se ocultan después de la primera pregunta.
+- **Botón Copiar:** cada respuesta del modelo tiene un botón "📋 Copiar" que
+  guarda el texto en el portapapeles y muestra "✓ Copiado" por un momento.
+
 ## Instalación rápida
 ```bash
 python -m venv .venv

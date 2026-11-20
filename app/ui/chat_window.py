@@ -34,6 +34,7 @@ from app.file_loader import FILTRO_DIALOGO, ErrorArchivo, cargar_archivo
 from app.ui.styles import ESTILO, ESTILO_OSCURO
 from app.ui.vista_previa import DialogoContenidoArchivo, DialogoVistaPrevia
 
+
 # ====================================================================== #
 # Hilo que consulta al modelo sin congelar la interfaz
 # ====================================================================== #
@@ -65,7 +66,7 @@ class HiloIA(QThread):
 # Burbuja de mensaje
 # ====================================================================== #
 class Burbuja(QWidget):
-    def __init__(self, emisor: str, texto: str, fecha_hora: str):
+    def __init__(self, emisor: str, texto: str, fecha_hora: str, mostrar_copiar: bool = True):
         super().__init__()
         es_usuario = emisor == "usuario"
 
@@ -89,13 +90,34 @@ class Burbuja(QWidget):
         # Las respuestas del modelo suelen venir en Markdown (listas, **negritas**)
         etiqueta_texto.setTextFormat(Qt.PlainText if es_usuario else Qt.MarkdownText)
 
+        pie = QHBoxLayout()
+        pie.setContentsMargins(0, 2, 0, 0)
+
+        if not es_usuario and mostrar_copiar:
+            boton_copiar = QPushButton("📋 Copiar")
+            boton_copiar.setCursor(Qt.PointingHandCursor)
+            boton_copiar.setStyleSheet(
+                "QPushButton { font-size: 11px; padding: 2px 8px; border-radius: 4px; }"
+            )
+
+            def copiar_respuesta():
+                QApplication.clipboard().setText(texto)
+                boton_copiar.setText("✓ Copiado")
+                QTimer.singleShot(1500, boton_copiar, lambda: boton_copiar.setText("📋 Copiar"))
+
+            boton_copiar.clicked.connect(copiar_respuesta)
+            pie.addWidget(boton_copiar)
+
+        pie.addStretch()
+
         etiqueta_fecha = QLabel(fecha_hora)
         etiqueta_fecha.setObjectName("fecha")
         etiqueta_fecha.setAlignment(Qt.AlignRight)
+        pie.addWidget(etiqueta_fecha)
 
         interior.addWidget(etiqueta_emisor)
         interior.addWidget(etiqueta_texto)
-        interior.addWidget(etiqueta_fecha)
+        interior.addLayout(pie)
 
         # Usuario a la derecha, modelo a la izquierda
         if es_usuario:
@@ -254,6 +276,27 @@ class VentanaChat(QMainWindow):
         self.scroll.setWidget(self.contenedor)
         lay.addWidget(self.scroll, stretch=1)
 
+        # Barra de preguntas sugeridas (visible solo cuando no hay mensajes)
+        self.barra_sugerencias = QWidget()
+        lay_sugerencias = QHBoxLayout(self.barra_sugerencias)
+        lay_sugerencias.setContentsMargins(12, 6, 12, 2)
+        lay_sugerencias.setSpacing(8)
+
+        preguntas_rapidas = [
+            "Resume el archivo",
+            "Puntos principales",
+            "Hazme un quiz de 3 preguntas",
+        ]
+        for pregunta in preguntas_rapidas:
+            btn = QPushButton(pregunta)
+            btn.setCursor(Qt.PointingHandCursor)
+            btn.clicked.connect(lambda _=False, p=pregunta: self._enviar_sugerencia(p))
+            lay_sugerencias.addWidget(btn)
+
+        lay_sugerencias.addStretch()
+        self.barra_sugerencias.hide()
+        lay.addWidget(self.barra_sugerencias)
+
         # Barra inferior de entrada
         barra = QWidget()
         barra.setObjectName("barraEntrada")
@@ -287,8 +330,8 @@ class VentanaChat(QMainWindow):
             if item.widget():
                 item.widget().deleteLater()
 
-    def agregar_burbuja(self, emisor, texto, fecha_hora):
-        burbuja = Burbuja(emisor, texto, fecha_hora)
+    def agregar_burbuja(self, emisor, texto, fecha_hora, mostrar_copiar: bool = True):
+        burbuja = Burbuja(emisor, texto, fecha_hora, mostrar_copiar=mostrar_copiar)
         # se inserta antes del stretch final
         self.layout_mensajes.insertWidget(self.layout_mensajes.count() - 1, burbuja)
         # baja el scroll cuando Qt termine de acomodar el widget
@@ -298,6 +341,8 @@ class VentanaChat(QMainWindow):
 
     def mostrar_bienvenida(self):
         self.limpiar_mensajes()
+        if hasattr(self, "barra_sugerencias"):
+            self.barra_sugerencias.hide()
         self.agregar_burbuja(
             "modelo",
             "¡Hola! Carga un archivo (**PDF**, **Word**, **Excel**, **TXT**, **CSV**, "
@@ -306,6 +351,7 @@ class VentanaChat(QMainWindow):
             "También puedes abrir una conversación anterior desde el historial "
             "para continuarla.",
             "",
+            mostrar_copiar=False,
         )
 
     # ------------------------------------------------------------------ #
@@ -355,11 +401,21 @@ class VentanaChat(QMainWindow):
         mensajes = self.db.obtener_mensajes(conversacion_id)
         if not mensajes:
             self.agregar_burbuja(
-                "modelo", f"Archivo **{conv['archivo_nombre']}** cargado. ¿Qué quieres saber?", ""
+                "modelo",
+                f"Archivo **{conv['archivo_nombre']}** cargado. ¿Qué quieres saber?",
+                "",
+                mostrar_copiar=False,
             )
+            self.barra_sugerencias.show()
+        else:
+            self.barra_sugerencias.hide()
         for m in mensajes:
             self.agregar_burbuja(m["emisor"], m["texto"], m["fecha_hora"])
         self.caja_texto.setFocus()
+
+    def _enviar_sugerencia(self, pregunta: str):
+        self.caja_texto.setPlainText(pregunta)
+        self.enviar_mensaje()
 
     def eliminar_conversacion(self):
         if not self._hay_conversacion():
@@ -402,13 +458,14 @@ class VentanaChat(QMainWindow):
             self.db.renombrar_conversacion(self.conversacion_id, f"{corto} · {conv['archivo_nombre']}")
             self.cargar_lista_conversaciones()
 
-        # 1) guardar y mostrar la pregunta
+        # 1) guardar y mostrar la pregunta (y ocultar sugerencias)
+        self.barra_sugerencias.hide()
         msg = self.db.agregar_mensaje(self.conversacion_id, "usuario", pregunta)
         self.agregar_burbuja("usuario", msg["texto"], msg["fecha_hora"])
         self.caja_texto.clear()
 
         # 2) indicador de "escribiendo"
-        self.burbuja_espera = self.agregar_burbuja("modelo", "_Pensando..._", "")
+        self.burbuja_espera = self.agregar_burbuja("modelo", "_Pensando..._", "", mostrar_copiar=False)
         self._bloquear_entrada(True)
 
         # 3) lanzar el hilo que consulta al modelo
@@ -427,7 +484,7 @@ class VentanaChat(QMainWindow):
     def recibir_error(self, error):
         self._quitar_burbuja_espera()
         # El error no se guarda en la BD: solo se muestra
-        self.agregar_burbuja("modelo", f"⚠️ **No se pudo obtener respuesta.**\n\n{error}", "")
+        self.agregar_burbuja("modelo", f"⚠️ **No se pudo obtener respuesta.**\n\n{error}", "", mostrar_copiar=False)
         self._bloquear_entrada(False)
 
     def _quitar_burbuja_espera(self):
@@ -501,7 +558,6 @@ class VentanaChat(QMainWindow):
         evento.accept()
         if self.cerrando_sesion:
             self.sesion_cerrada.emit()
-
 
     # Tema claro / oscuro
     def cambiar_tema(self):
