@@ -7,14 +7,18 @@ Un QDialog se abre con .exec() y "bloquea" hasta que se cierra:
   - self.accept() -> el login fue correcto  (exec() regresa Accepted)
   - self.reject() -> el usuario cerró la ventana
 """
+from pathlib import Path #CAMBIO NUEVO: Se importo pathlib
 
 from PySide6.QtCore import Qt
+from PySide6.QtGui import QAction, QIcon, QPixmap  #CAMBIO NUEVO: Se importaron QIcon y QPixmap
 from PySide6.QtWidgets import (
-    QDialog, QHBoxLayout, QLabel, QLineEdit, QMessageBox, QPushButton, QVBoxLayout,
-)
+    QDialog, QHBoxLayout, QLabel, QLineEdit, QMessageBox, QPushButton, QStyle, QVBoxLayout,
+)       #CAMBIO NUEVO: Se agrego QStyle a la lista de importaciones
 
 from app import auth
 
+#CAMBIO NUEVO: Se creó una carpeta en la raiz del proyecto (junto a main.py)
+CARPETA_ASSETS = Path(__file__).resolve().parent.parent.parent / "assets"
 
 class VentanaLogin(QDialog):
     def __init__(self, db):
@@ -24,7 +28,7 @@ class VentanaLogin(QDialog):
         self.username = ""
 
         self.setWindowTitle("Chat con IA - Iniciar sesión")
-        self.setFixedSize(380, 320)
+        self.setFixedSize(380, 480)  #CAMBIO NUEVO: Se agrando la altura para el logo y campo extra
         self._construir_ui()
 
     def _construir_ui(self):
