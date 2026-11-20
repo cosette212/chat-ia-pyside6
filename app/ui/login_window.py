@@ -119,6 +119,11 @@ class VentanaLogin(QDialog):
         self.accept()
 
     def registrar(self):
+        #CAMBIO NUEVO: Se agrego una funcion para que se valide que ambas contraseñas coincidan antes de registrarse
+        if self.campo_password.text() != self.campo_confirmar.text():
+            QMessageBox.warning(self, "Registro", "Las contraseñas no coinciden.")
+            return
+        
         ok, mensaje = auth.registrar(
             self.db, self.campo_usuario.text(), self.campo_password.text()
         )
