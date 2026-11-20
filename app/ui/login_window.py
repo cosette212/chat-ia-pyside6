@@ -36,6 +36,14 @@ class VentanaLogin(QDialog):
         layout.setContentsMargins(30, 25, 30, 25)
         layout.setSpacing(10)
 
+#CAMBIO NUEVO: Se agrego un logo a la ventana de login
+        pixmap = QPixmap(str(CARPETA_ASSETS / "logo.png"))
+        if not pixmap.isNull():
+            logo = QLabel()
+            logo.setPixmap(pixmap.scaledToWidth(100, Qt.SmoothTransformation))
+            logo.setAlignment(Qt.AlignCenter)
+            layout.addWidget(logo)
+
         titulo = QLabel("💬 Chat con IA")
         titulo.setObjectName("tituloLogin")
         titulo.setAlignment(Qt.AlignCenter)
@@ -58,6 +66,24 @@ class VentanaLogin(QDialog):
         layout.addWidget(self.campo_password)
         layout.addSpacing(10)
 
+        #CAMBIO NUEVO: Se agrego un boton de mostrar/ocultar contraseña
+        ruta_ojo = CARPETA_ASSETS / "ojo.png"
+        if ruta_ojo.exists():
+            icono = QIcon(str(ruta_ojo))
+        else:
+            icono = self.style().standardIcon(QStyle.SP_DialogYesButton)  # icono por defecto el archivo
+        self.accion_ojo = QAction(icono, "Mostrar contraseña", self)
+        self.accion_ojo.setCheckable(True)
+        self.accion_ojo.toggled.connect(self.mostrar_password)
+        self.campo_password.addAction(self.accion_ojo, QLineEdit.TrailingPosition)
+
+        #CAMBIO NUEVO: Campo para confrimar la contraeña
+        self.campo_confirmar = QLineEdit()
+        self.campo_confirmar.setPlaceholderText("Confirmar contraseña")
+        self.campo_confirmar.setEchoMode(QLineEdit.Password)
+        layout.addWidget(self.campo_confirmar)
+        layout.addSpacing(10)
+
         botones = QHBoxLayout()
         boton_registrar = QPushButton("Registrarse")
         boton_registrar.setObjectName("botonSecundario")
@@ -73,6 +99,12 @@ class VentanaLogin(QDialog):
         layout.addLayout(botones)
         layout.addStretch()
 
+#CAMBIO NUEVO: Se agrego la funcion para mostrar/ocultar la contraseña
+    def mostrar_password(self, visible):
+        modo = QLineEdit.Normal if visible else QLineEdit.Password
+        self.campo_password.setEchoMode(modo)
+        self.campo_confirmar.setEchoMode(modo)
+        
     # --- Acciones de los botones (slots) ---
     def ingresar(self):
         usuario = self.campo_usuario.text()
