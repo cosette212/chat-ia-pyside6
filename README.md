@@ -12,6 +12,19 @@ Aplicación de escritorio en **Python + PySide6** para cargar un archivo (**PDF,
 - Exportación a JSON y XML desde un botón con menú desplegable.
 - **Ver contenido** de la exportación: vista previa de la conversación en el formato elegido antes de guardarla
 
+
+## Login mejorado (Integrante 2 -- Gabriela)
+
+**Archivo:** `app/ui/login_window.py` (y carpeta `assets/`)
+
+- **Botón de ojo:** Dentro del campo de contraseña hay un ojo que alterna entre mostrar y ocultar el texto. Con la contraseña oculta aparece el ojo cerrado, al mostrarla se abre.
+- **Confirmar contraseña:** Al registrarse hay que escribir la contraseña dos veces. Si no coinciden, se muestra un error y no se crea el usuario.
+- **Logo:** La ventana de login muestra un logo guardado en `assets/logo.png`.
+- **Ventana ajustada:** Se agrandó el tamaño de la ventana para que quepan todos los elementos.
+
+* Icono del ojo cerrado: <a href="https://www.flaticon.es/iconos-gratis/ojo-de-cerca" title="ojo de cerca iconos">Ojo de cerca iconos creados por sonnycandra - Flaticon</a>
+
+
 ### Preguntas sugeridas y botón Copiar (Integrante 5)
 
 **Archivo:** `app/ui/chat_window.py` (clases `Burbuja` y `VentanaChat`)
@@ -55,5 +68,4 @@ proyecto-chatbot/
         ├── vista_previa.py  # ventanas "Ver contenido" (archivo cargado y vista previa de la exportación)
         └── chat_window.py   # ventana principal del chat
 ```
-
 
