@@ -40,11 +40,11 @@ class VentanaLogin(QDialog):
         pixmap = QPixmap(str(CARPETA_ASSETS / "logo.png"))
         if not pixmap.isNull():
             logo = QLabel()
-            logo.setPixmap(pixmap.scaledToWidth(100, Qt.SmoothTransformation))
+            logo.setPixmap(pixmap.scaledToWidth(200, Qt.SmoothTransformation))
             logo.setAlignment(Qt.AlignCenter)
             layout.addWidget(logo)
 
-        titulo = QLabel("💬 Chat con IA")
+        titulo = QLabel("Chat con IA")
         titulo.setObjectName("tituloLogin")
         titulo.setAlignment(Qt.AlignCenter)
         layout.addWidget(titulo)
