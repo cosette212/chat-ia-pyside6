@@ -24,6 +24,12 @@ Aplicación de escritorio en **Python + PySide6** para cargar un archivo (**PDF,
 
 * Icono del ojo cerrado: <a href="https://www.flaticon.es/iconos-gratis/ojo-de-cerca" title="ojo de cerca iconos">Ojo de cerca iconos creados por sonnycandra - Flaticon</a>
 
+## Buscar y renombrar conversaciones (Integrante 3)
+
+Archivo modificado: `app/ui/chat_window.py` (panel lateral)
+
+- **Buscador:** cuadro "Buscar..." arriba del historial. Al escribir, se ocultan las conversaciones cuyo título no contiene el texto.
+- **Renombrar:** al hacer doble clic en una conversación se abre un cuadro para escribir el nuevo nombre, que se guarda en la base de datos.
 
 ### Preguntas sugeridas y botón Copiar (Integrante 5)
 
