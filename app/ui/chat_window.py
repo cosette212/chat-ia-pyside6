@@ -25,7 +25,7 @@ from PySide6.QtCore import Qt, QThread, QTimer, Signal
 from PySide6.QtWidgets import (
     QApplication, QFileDialog, QFrame, QHBoxLayout, QLabel, QListWidget, QListWidgetItem,
     QMainWindow, QMenu, QMessageBox, QPlainTextEdit, QPushButton, QScrollArea,
-    QVBoxLayout, QWidget,
+    QVBoxLayout, QWidget, QLineEdit, QInputDialog
 )
 
 from app import exporter
@@ -208,8 +208,15 @@ class VentanaChat(QMainWindow):
         titulo.setObjectName("tituloSeccion")
         lay.addWidget(titulo)
 
+        self.buscador = QLineEdit()
+        self.buscador.setPlaceholderText("Buscar...")
+        self.buscador.setClearButtonEnabled(True)  # muestra una "x" para borrar
+        self.buscador.textChanged.connect(self.filtrar_conversaciones)
+        lay.addWidget(self.buscador)
+
         self.lista_conversaciones = QListWidget()
         self.lista_conversaciones.itemClicked.connect(self.abrir_conversacion_desde_lista)
+        self.lista_conversaciones.itemDoubleClicked.connect(self.renombrar_conversacion)
         lay.addWidget(self.lista_conversaciones, stretch=1)
 
         titulo_op = QLabel("OPCIONES")
@@ -366,6 +373,14 @@ class VentanaChat(QMainWindow):
             self.lista_conversaciones.addItem(item)
             if conv["id"] == self.conversacion_id:
                 item.setSelected(True)
+        self.filtrar_conversaciones(self.buscador.text())
+
+    def filtrar_conversaciones(self, texto):
+        """Oculta las conversaciones cuyo título no contiene el texto buscado."""
+        texto = texto.strip().lower()
+        for i in range(self.lista_conversaciones.count()):
+            item = self.lista_conversaciones.item(i)
+            item.setHidden(texto not in item.text().lower())
 
     def nueva_conversacion(self):
         ruta, _ = QFileDialog.getOpenFileName(
@@ -385,6 +400,18 @@ class VentanaChat(QMainWindow):
 
     def abrir_conversacion_desde_lista(self, item):
         self.abrir_conversacion(item.data(Qt.UserRole))
+
+    def renombrar_conversacion(self, item):
+        """Pide un nombre nuevo para la conversación en la que se hizo doble clic."""
+        conversacion_id = item.data(Qt.UserRole)
+        nuevo, aceptado = QInputDialog.getText(
+            self, "Renombrar conversación", "Nuevo nombre:", text=item.text()
+        )
+        nuevo = nuevo.strip()
+        if not aceptado or not nuevo:
+            return  # canceló o lo dejó vacío
+        self.db.renombrar_conversacion(conversacion_id, nuevo)
+        self.cargar_lista_conversaciones()
 
     def abrir_conversacion(self, conversacion_id):
         conv = self.db.obtener_conversacion(conversacion_id)
