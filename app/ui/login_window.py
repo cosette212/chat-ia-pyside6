@@ -67,12 +67,9 @@ class VentanaLogin(QDialog):
         layout.addSpacing(10)
 
         #CAMBIO NUEVO: Se agrego un boton de mostrar/ocultar contraseña
-        ruta_ojo = CARPETA_ASSETS / "ojo.png"
-        if ruta_ojo.exists():
-            icono = QIcon(str(ruta_ojo))
-        else:
-            icono = self.style().standardIcon(QStyle.SP_DialogYesButton)  # icono por defecto el archivo
-        self.accion_ojo = QAction(icono, "Mostrar contraseña", self)
+        self.icono_cerrado = self._cargar_icono("ojo_cerrado.png", QStyle.SP_DialogNoButton)
+        self.icono_abierto = self._cargar_icono("ojo_abierto.png", QStyle.SP_DialogYesButton)
+        self.accion_ojo = QAction(self.icono_cerrado, "Mostrar contraseña", self)
         self.accion_ojo.setCheckable(True)
         self.accion_ojo.toggled.connect(self.mostrar_password)
         self.campo_password.addAction(self.accion_ojo, QLineEdit.TrailingPosition)
@@ -80,8 +77,9 @@ class VentanaLogin(QDialog):
         #CAMBIO NUEVO: Campo para confrimar la contraeña
         self.campo_confirmar = QLineEdit()
         self.campo_confirmar.setPlaceholderText("Confirmar contraseña")
-        self.campo_confirmar.setEchoMode(QLineEdit.Password)
+        self.campo_confirmar.setEchoMode(QLineEdit.Password)     
         layout.addWidget(self.campo_confirmar)
+        self.campo_confirmar.addAction(self.accion_ojo, QLineEdit.TrailingPosition)
         layout.addSpacing(10)
 
         botones = QHBoxLayout()
@@ -100,10 +98,18 @@ class VentanaLogin(QDialog):
         layout.addStretch()
 
 #CAMBIO NUEVO: Se agrego la funcion para mostrar/ocultar la contraseña
+
+    def _cargar_icono(self, nombre, respaldo):
+        ruta = CARPETA_ASSETS / nombre
+        if ruta.exists():
+            return QIcon(str(ruta))
+        return self.style().standardIcon(respaldo)
+
     def mostrar_password(self, visible):
         modo = QLineEdit.Normal if visible else QLineEdit.Password
         self.campo_password.setEchoMode(modo)
         self.campo_confirmar.setEchoMode(modo)
+        self.accion_ojo.setIcon(self.icono_abierto if visible else self.icono_cerrado)
         
     # --- Acciones de los botones (slots) ---
     def ingresar(self):
